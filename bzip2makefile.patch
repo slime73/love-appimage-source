@@ -1,0 +1,10 @@
+21d20
+< LDFLAGS=
+24c23
+< CFLAGS=-Wall -Winline -O2 -g $(BIGFILES)
+---
+> CFLAGS=-fPIC -Wall -Winline -O2 -g $(BIGFILES)
+27c26
+< PREFIX=/usr/local
+---
+> PREFIX?=/usr/local
