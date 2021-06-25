@@ -6,7 +6,9 @@ Creates LOVE AppImage by compiling every single dependency from source.
 Build
 -----
 
-Run `make`. `love-master.AppImage` (by default) will be generated. See the Makefile script for various tweakable variables.
+You may want to grab all dependencies required by SDL, but **not** the SDL itself.
+
+Afterwards, run `make`. `love-master.AppImage` (by default) will be generated. See the Makefile script for various tweakable variables.
 
 License
 -----
