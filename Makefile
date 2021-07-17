@@ -3,6 +3,9 @@
 # Number of processor to use when compiling
 NUMBER_OF_PROCESSORS := $(shell nproc)
 
+# CPU architecture, defaults to host
+ARCH := $(shell uname -m)
+
 # CMake URL
 CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-3.20.2-linux-x86_64.sh
 
@@ -36,6 +39,7 @@ override CMAKE_OPTS := -DCMAKE_INSTALL_RPATH='$$ORIGIN/../lib' -DCMAKE_INSTALL_P
 override CONFIGURE := LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' $(LDFLAGS)" ../configure --prefix=$(INSTALLPREFIX)
 
 # CMake setup
+ifeq ($(SYSTEM_CMAKE),)
 cmake_install.sh:
 	curl -Lo cmake_install.sh $(CMAKE_URL)
 	chmod u+x cmake_install.sh
@@ -44,10 +48,20 @@ $(CMAKE): cmake_install.sh
 	mkdir cmake
 	bash cmake_install.sh --prefix=$(CMAKE_PREFIX) --skip-license
 	touch $(CMAKE)
+else
+CMAKE := $(CURDIR)/cmakewrapper.sh
+
+$(CMAKE):
+	which cmake
+	echo $(shell which cmake) '$$@' > $(CMAKE)
+	chmod u+x $(CMAKE)
+endif
+
+cmake: $(CMAKE)
 
 # AppImageTool
 appimagetool:
-	curl -Lo appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
+	curl -Lo appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$(ARCH).AppImage
 	chmod u+x appimagetool
 
 # SDL2
@@ -270,7 +284,7 @@ installdir/lib/libluajit-5.1.so: $(LUAJIT_PATH)/Makefile
 	strip installdir/bin/luaji*
 
 # LOVE
-override LOVE_PATH := love-$(LOVE_BRANCH)
+override LOVE_PATH := love2d-$(LOVE_BRANCH)
 
 $(LOVE_PATH)/CMakeLists.txt:
 	git clone --depth 1 -b $(LOVE_BRANCH) https://github.com/love2d/love $(LOVE_PATH)
@@ -303,6 +317,23 @@ installdir/love.desktop: $(LOVE_PATH)/platform/unix/love.desktop.in
 installdir/love.svg: $(LOVE_PATH)/platform/unix/love.svg
 	cp $(LOVE_PATH)/platform/unix/love.svg installdir/love.svg
 
+appimage-prepare: installdir/AppRun installdir/love.desktop installdir/love.svg appimagetool
+	cp -r installdir installdir2
+	-rm -rf installdir2/share/man
+	-rm -rf installdir2/share/doc
+	-rm -rf installdir2/share/openal
+	-rm -rf installdir2/lib/mpg123
+	-rm -rf installdir2/lib/cmake
+	-rm -rf installdir2/lib/pkgconfig
+	-rm -rf installdir2/lib/*.a
+	-rm -rf installdir2/lib/*.la
+	-rm -rf installdir2/lib/*.la
+	-rm -rf installdir2/include
+	-rm -rf installdir2/man
+	-find installdir2/bin -type l -exec rm -rf {} +
+	-find installdir2/bin ! -name 'luajit*' ! -name 'love' -type f -exec rm -f {} +
+	-strip installdir2/lib/*
+
 $(APPIMAGE_OUTPUT): installdir/AppRun installdir/love.desktop installdir/love.svg appimagetool
 	cp -r installdir installdir2
 	-rm -rf installdir2/share/man
@@ -322,7 +353,7 @@ $(APPIMAGE_OUTPUT): installdir/AppRun installdir/love.desktop installdir/love.sv
 	./appimagetool installdir2 love-master.AppImage
 	rm -rf installdir2
 
-getdeps: cmake_install.sh appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(MPG123_FILE).tar.bz2 $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt
+getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(MPG123_FILE).tar.bz2 $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt
 
 .DEFAULT_GOAL := $(APPIMAGE_OUTPUT)
-.PHONY := getdeps
+.PHONY := getdeps cmake appimage-prepare

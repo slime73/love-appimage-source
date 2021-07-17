@@ -1,0 +1,16 @@
+*.tar.bz2
+*.tar.gz
+LuaJIT-*/
+SDL2-*/
+appimagetool
+brotli-*/
+bzip2-*/
+cmakewrapper.sh
+freetype-*/
+installdir/
+installdir2/
+libmodplug-*/
+libpng-*/
+love2d-master/
+mpg123-*/
+zlib-*/
