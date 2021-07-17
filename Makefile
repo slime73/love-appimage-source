@@ -7,7 +7,7 @@ NUMBER_OF_PROCESSORS := $(shell nproc)
 ARCH := $(shell uname -m)
 
 # CMake URL
-CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-3.20.2-linux-x86_64.sh
+CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-3.20.2-linux-$(shell uname -m).sh
 
 # Project branches (for git-based projects)
 LOVE_BRANCH := master
@@ -36,7 +36,7 @@ override INSTALLPREFIX := $(CURDIR)/installdir
 override CMAKE_PREFIX := $(CURDIR)/cmake
 CMAKE := $(CMAKE_PREFIX)/bin/cmake
 override CMAKE_OPTS := -DCMAKE_INSTALL_RPATH='$$ORIGIN/../lib' -DCMAKE_INSTALL_PREFIX=$(INSTALLPREFIX)
-override CONFIGURE := LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' $(LDFLAGS)" ../configure --prefix=$(INSTALLPREFIX)
+override CONFIGURE := LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' $$LDFLAGS" ../configure --prefix=$(INSTALLPREFIX)
 
 # CMake setup
 ifeq ($(SYSTEM_CMAKE),)
@@ -124,6 +124,13 @@ $(LIBTHEORA_FILE).tar.gz:
 
 $(LIBTHEORA_FILE)/configure: $(LIBTHEORA_FILE).tar.gz
 	tar xzf $(LIBTHEORA_FILE).tar.gz
+# Their config.guess and config.sub can't detect ARM64
+ifeq ($(ARCH),aarch64)
+	curl -o $(LIBTHEORA_FILE)/config.guess "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD"
+	chmod u+x $(LIBTHEORA_FILE)/config.guess
+	curl -o $(LIBTHEORA_FILE)/config.sub "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD"
+	chmod u+x $(LIBTHEORA_FILE)/config.sub
+endif
 	touch $(LIBTHEORA_FILE)/configure
 
 $(LIBTHEORA_FILE)/build/Makefile: $(LIBTHEORA_FILE)/configure installdir/lib/libogg.so
@@ -162,10 +169,10 @@ $(LIBPNG_FILE)/configure: $(LIBPNG_FILE).tar.gz
 
 $(LIBPNG_FILE)/build/Makefile: $(LIBPNG_FILE)/configure installdir/lib/libz.so
 	mkdir -p $(LIBPNG_FILE)/build
-	cd $(LIBPNG_FILE)/build && $(CONFIGURE)
+	cd $(LIBPNG_FILE)/build && LDFLAGS="-L$(INSTALLPREFIX)/lib" CFLAGS="-I$(INSTALLPREFIX)/include" CPPFLAGS="-I$(INSTALLPREFIX)/include" $(CONFIGURE)
 
 installdir/lib/libpng16.so: $(LIBPNG_FILE)/build/Makefile
-	cd $(LIBPNG_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
+	cd $(LIBPNG_FILE)/build && CFLAGS="-I$(INSTALLPREFIX)/include" $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 	strip installdir/lib/libpng16.so
 
 # Brotli
