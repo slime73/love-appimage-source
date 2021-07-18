@@ -1,3 +1,4 @@
+*.AppImage
 *.tar.bz2
 *.tar.gz
 LuaJIT-*/
@@ -19,4 +20,5 @@ libvorbis-*/
 love2d-master/
 mpg123-*/
 openal-soft-*/
+squashfs-root/
 zlib-*/
