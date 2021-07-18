@@ -138,7 +138,7 @@ $(LIBTHEORA_FILE)/build/Makefile: $(LIBTHEORA_FILE)/configure installdir/lib/lib
 	cd $(LIBTHEORA_FILE)/build && $(CONFIGURE) --with-ogg=$(INSTALLPREFIX) --with-vorbis=$(INSTALLPREFIX) --disable-examples --disable-encode
 
 installdir/lib/libtheora.so: $(LIBTHEORA_FILE)/build/Makefile
-	cd $(LIBTHEORA_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
+	cd $(LIBTHEORA_FILE)/build && $(MAKE) install -j $(NUMBER_OF_PROCESSORS)
 	strip installdir/lib/libtheora.so
 	strip installdir/lib/libtheoradec.so
 	strip installdir/lib/libtheoraenc.so
@@ -154,7 +154,7 @@ $(ZLIB_PATH)/build/Makefile: $(ZLIB_PATH)/configure
 	cd $(ZLIB_PATH)/build && $(CONFIGURE)
 
 installdir/lib/libz.so: $(ZLIB_PATH)/build/Makefile
-	cd $(ZLIB_PATH)/build && make install -j$(NUMBER_OF_PROCESSORS)
+	cd $(ZLIB_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 	strip installdir/lib/libz.so
 
 # libpng
@@ -185,7 +185,7 @@ $(BROTLI_PATH)/build/CMakeCache.txt: $(CMAKE) $(BROTLI_PATH)/CMakeLists.txt
 	$(CMAKE) -B$(BROTLI_PATH)/build -H$(BROTLI_PATH) $(CMAKE_OPTS)
 
 installdir/lib/libbrotlidec.so: $(BROTLI_PATH)/build/CMakeCache.txt
-	$(CMAKE) --build $(BROTLI_PATH)/build --target install -j$(NUMBER_OF_PROCESSORS)
+	$(CMAKE) --build $(BROTLI_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
 	strip installdir/lib/libbrotlicommon.so
 	strip installdir/lib/libbrotlidec.so
 	strip installdir/lib/libbrotlienc.so
@@ -200,7 +200,7 @@ $(OPENAL_PATH)/build/CMakeCache.txt: $(CMAKE) $(OPENAL_PATH)/CMakeLists.txt
 	$(CMAKE) -B$(OPENAL_PATH)/build -H$(OPENAL_PATH) $(CMAKE_OPTS) -DALSOFT_EXAMPLES=0 -DALSOFT_BACKEND_SNDIO=0
 
 installdir/lib/libopenal.so: $(OPENAL_PATH)/build/CMakeCache.txt
-	$(CMAKE) --build $(OPENAL_PATH)/build --target install -j$(NUMBER_OF_PROCESSORS)
+	$(CMAKE) --build $(OPENAL_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
 	strip installdir/lib/libopenal.so
 
 # BZip2
@@ -221,7 +221,7 @@ $(BZIP2_FILE)/Makefile: $(BZIP2_FILE)/Makefile.unpatched bzip2makefile.patch
 	patch -o $(BZIP2_FILE)/Makefile $(BZIP2_FILE)/Makefile.unpatched bzip2makefile.patch
 
 installdir/bzip2installed.txt: $(BZIP2_FILE)/Makefile
-	cd $(BZIP2_FILE) && LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib'" PREFIX=$(INSTALLPREFIX) make install -j$(NUMBER_OF_PROCESSORS)
+	cd $(BZIP2_FILE) && LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib'" PREFIX=$(INSTALLPREFIX) $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 	touch installdir/bzip2installed.txt
 
 # FreeType
@@ -239,7 +239,7 @@ $(FT_FILE)/build/Makefile: $(FT_FILE)/configure installdir/bzip2installed.txt in
 	cd $(FT_FILE)/build && CFLAGS="-I$(INSTALLPREFIX)/include" LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib -Wl,--no-undefined" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig ../configure --prefix=$(INSTALLPREFIX)
 
 installdir/lib/libfreetype.so: $(FT_FILE)/build/Makefile
-	cd $(FT_FILE)/build && make install -j$(NUMBER_OF_PROCESSORS)
+	cd $(FT_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 	strip installdir/lib/libfreetype.so
 
 # Mpg123
@@ -257,7 +257,7 @@ $(MPG123_FILE)/builddir/Makefile: $(MPG123_FILE)/configure
 	cd $(MPG123_FILE)/builddir && $(CONFIGURE)
 
 installdir/lib/libmpg123.so: $(MPG123_FILE)/builddir/Makefile
-	cd $(MPG123_FILE)/builddir && make install -j$(NUMBER_OF_PROCESSORS)
+	cd $(MPG123_FILE)/builddir && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 	strip installdir/lib/libmpg123.so
 
 # libmodplug
@@ -275,7 +275,7 @@ $(LIBMODPLUG_FILE)/build/Makefile: $(LIBMODPLUG_FILE)/configure
 	cd $(LIBMODPLUG_FILE)/build && $(CONFIGURE)
 
 installdir/lib/libmodplug.so: $(LIBMODPLUG_FILE)/build/Makefile
-	cd $(LIBMODPLUG_FILE)/build && make install -j$(NUMBER_OF_PROCESSORS)
+	cd $(LIBMODPLUG_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 
 # LuaJIT
 override LUAJIT_PATH := LuaJIT-$(LUAJIT_BRANCH)
@@ -284,7 +284,7 @@ $(LUAJIT_PATH)/Makefile:
 	git clone --depth 1 -b $(LUAJIT_BRANCH) https://github.com/LuaJIT/LuaJIT $(LUAJIT_PATH)
 
 installdir/lib/libluajit-5.1.so: $(LUAJIT_PATH)/Makefile
-	cd $(LUAJIT_PATH) && LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib'" make amalg -j$(NUMBER_OF_PROCESSORS) PREFIX=/usr
+	cd $(LUAJIT_PATH) && LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib'" $(MAKE) amalg -j$(NUMBER_OF_PROCESSORS) PREFIX=/usr
 	cd $(LUAJIT_PATH) && make install PREFIX=$(INSTALLPREFIX)
 	cd $(LUAJIT_PATH) && make clean
 	strip installdir/lib/libluajit-5.1.so
@@ -310,7 +310,7 @@ $(LOVE_PATH)/build/Makefile: $(LOVE_PATH)/configure
 	cd $(LOVE_PATH)/build && CFLAGS="-I$(INSTALLPREFIX)/include" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib" ../configure --prefix=$(INSTALLPREFIX)
 
 installdir/bin/love: $(LOVE_PATH)/build/Makefile
-	cd $(LOVE_PATH)/build && make install -j$(NUMBER_OF_PROCESSORS)
+	cd $(LOVE_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 	strip installdir/bin/love
 	-strip installdir/lib/liblove*
 
