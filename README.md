@@ -12,6 +12,8 @@ Note for Ubuntu ARM64: If APT can't find `libsndio-dev` and `fcitx-libs-dev`, ma
 
 Afterwards, run `make`. `love-master.AppImage` (by default) will be generated. See the Makefile script for various tweakable variables.
 
+If you're running WSL 1, run `make QEMU=env` instead to bypass FUSE requirement restrictions by extrating `appimagetool` somewhere else first.
+
 License
 -----
 
