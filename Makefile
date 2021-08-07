@@ -22,7 +22,7 @@ LIBOGG_VERSION := 1.3.4
 LIBVORBIS_VERSION := 1.3.7
 LIBTHEORA_VERSION := 1.2.0alpha1
 LIBPNG_VERSION := 1.6.37
-FT_VERSION := 2.10.4
+FT_VERSION := 2.11.0
 BZIP2_VERSION := 1.0.8
 MPG123_VERSION := 1.27.2
 LIBMODPLUG_VERSION := 0.8.8.5
@@ -212,20 +212,10 @@ override BZIP2_FILE := bzip2-$(BZIP2_VERSION)
 
 $(BZIP2_FILE).tar.gz:
 	curl -Lo $(BZIP2_FILE).tar.gz https://sourceware.org/pub/bzip2/$(BZIP2_FILE).tar.gz
-
-bzip2makefile.patch:
-	curl -Lo bzip2makefile.patch https://github.com/MikuAuahDark/test-love-linux-compilation/raw/master/bzip2makefile.patch
-
-$(BZIP2_FILE)/Makefile.unpatched: $(BZIP2_FILE).tar.gz
-	tar xzf $(BZIP2_FILE).tar.gz
-	mv $(BZIP2_FILE)/Makefile $(BZIP2_FILE)/Makefile.unpatched
-	touch $(BZIP2_FILE)/Makefile.unpatched
-
-$(BZIP2_FILE)/Makefile: $(BZIP2_FILE)/Makefile.unpatched bzip2makefile.patch
-	patch -o $(BZIP2_FILE)/Makefile $(BZIP2_FILE)/Makefile.unpatched bzip2makefile.patch
+	touch $(BZIP2_FILE)/Makefile
 
 installdir/bzip2installed.txt: $(BZIP2_FILE)/Makefile
-	cd $(BZIP2_FILE) && LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib'" PREFIX=$(INSTALLPREFIX) $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
+	cd $(BZIP2_FILE) && $(MAKE) install -j$(NUMBER_OF_PROCESSORS) CFLAGS="-fPIC -Wall -Winline -O2 -g -D_FILE_OFFSET_BITS=64" LDFLAGS="-Wl,-rpath,'\$ORIGIN/../lib'" PREFIX=$INSTALLPREFIX
 	touch installdir/bzip2installed.txt
 
 # FreeType
