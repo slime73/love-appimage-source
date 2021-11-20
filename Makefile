@@ -355,9 +355,9 @@ $(APPIMAGE_OUTPUT): installdir/AppRun installdir/love.desktop installdir/love.sv
 	-find installdir2/bin ! -name 'luajit*' ! -name 'love' -type f -exec rm -f {} +
 	-strip installdir2/lib/*
 ifeq ($(QEMU),)
-	./appimagetool installdir2 love-master.AppImage
+	./appimagetool installdir2 $(APPIMAGE_OUTPUT)
 else
-	cd squashfs-root/usr/lib && ../../AppRun ../../../installdir2 ../../../love-master.AppImage
+	cd squashfs-root/usr/lib && ../../AppRun ../../../installdir2 ../../../$(APPIMAGE_OUTPUT)
 endif
 	rm -rf installdir2
 
