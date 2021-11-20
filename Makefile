@@ -212,6 +212,8 @@ override BZIP2_FILE := bzip2-$(BZIP2_VERSION)
 
 $(BZIP2_FILE).tar.gz:
 	curl -Lo $(BZIP2_FILE).tar.gz https://sourceware.org/pub/bzip2/$(BZIP2_FILE).tar.gz
+
+$(BZIP2_FILE)/Makefile:
 	tar xzf $(BZIP2_FILE).tar.gz
 	touch $(BZIP2_FILE)/Makefile
 
