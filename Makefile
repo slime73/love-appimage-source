@@ -218,7 +218,7 @@ $(BZIP2_FILE)/Makefile: $(BZIP2_FILE).tar.gz
 	touch $(BZIP2_FILE)/Makefile
 
 installdir/bzip2installed.txt: $(BZIP2_FILE)/Makefile
-	cd $(BZIP2_FILE) && $(MAKE) install -j$(NUMBER_OF_PROCESSORS) CFLAGS="-fPIC -Wall -Winline -O2 -g -D_FILE_OFFSET_BITS=64" LDFLAGS="-Wl,-rpath,'\$ORIGIN/../lib'" PREFIX=$INSTALLPREFIX
+	cd $(BZIP2_FILE) && $(MAKE) install -j$(NUMBER_OF_PROCESSORS) CFLAGS="-fPIC -Wall -Winline -O2 -g -D_FILE_OFFSET_BITS=64" LDFLAGS="-Wl,-rpath,'\$ORIGIN/../lib'" PREFIX=$(INSTALLPREFIX)
 	touch installdir/bzip2installed.txt
 
 # FreeType
