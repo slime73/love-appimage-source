@@ -11,20 +11,20 @@ CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-3.
 
 # Project branches (for git-based projects)
 LOVE_BRANCH := main
-SDL2_BRANCH := release-2.0.16
+SDL2_BRANCH := release-2.0.18
 LUAJIT_BRANCH := v2.1
 OPENAL_BRANCH := 1.21.1
 BROTLI_BRANCH := v1.0.9
 ZLIB_BRANCH := v1.2.11
 
 # Project versions (for downloadable tars)
-LIBOGG_VERSION := 1.3.4
+LIBOGG_VERSION := 1.3.5
 LIBVORBIS_VERSION := 1.3.7
 LIBTHEORA_VERSION := 1.2.0alpha1
 LIBPNG_VERSION := 1.6.37
-FT_VERSION := 2.11.0
+FT_VERSION := 2.11.1
 BZIP2_VERSION := 1.0.8
-MPG123_VERSION := 1.27.2
+MPG123_VERSION := 1.29.3
 LIBMODPLUG_VERSION := 0.8.8.5
 
 # Output AppImage
