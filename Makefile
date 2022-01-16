@@ -11,7 +11,7 @@ CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-3.
 
 # Project branches (for git-based projects)
 LOVE_BRANCH := main
-SDL2_BRANCH := release-2.0.18
+SDL2_BRANCH := release-2.0.20
 LUAJIT_BRANCH := v2.1
 OPENAL_BRANCH := 1.21.1
 BROTLI_BRANCH := v1.0.9
