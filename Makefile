@@ -341,7 +341,7 @@ appimage-prepare: installdir/AppRun installdir/love.desktop installdir/love.svg 
 	-find installdir2/bin ! -name 'luajit*' ! -name 'love' -type f -exec rm -f {} +
 	-strip installdir2/lib/*
 
-$(APPIMAGE_OUTPUT): installdir/AppRun installdir/love.desktop installdir/love.svg appimagetool
+$(APPIMAGE_OUTPUT): installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool
 	cp -r installdir installdir2
 	-rm -rf installdir2/share/man
 	-rm -rf installdir2/share/doc
