@@ -324,7 +324,7 @@ installdir/love.svg: $(LOVE_PATH)/platform/unix/love.svg
 installdir/license.txt: $(LOVE_PATH)/license.txt
 	cp $(LOVE_PATH)/license.txt installdir/license.txt
 
-appimage-prepare: installdir/AppRun installdir/love.desktop installdir/love.svg appimagetool
+appimage-prepare: installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool
 	cp -r installdir installdir2
 	-rm -rf installdir2/share/man
 	-rm -rf installdir2/share/doc
