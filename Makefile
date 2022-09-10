@@ -7,7 +7,7 @@ NUMBER_OF_PROCESSORS := $(shell nproc)
 ARCH := $(shell uname -m)
 
 # CMake URL
-CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v3.20.2/cmake-3.20.2-linux-$(shell uname -m).sh
+CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1-linux-$(shell uname -m).sh
 
 # Project branches (for git-based projects)
 LOVE_BRANCH := main
@@ -41,7 +41,7 @@ override CONFIGURE := LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' $$LDFLAGS" ../co
 # CMake setup
 ifeq ($(SYSTEM_CMAKE),)
 cmake_install.sh:
-	curl -Lo cmake_install.sh $(CMAKE_URL)
+	curl $(CURL_DOH_URL) -Lo cmake_install.sh $(CMAKE_URL)
 	chmod u+x cmake_install.sh
 
 $(CMAKE): cmake_install.sh
@@ -57,11 +57,16 @@ $(CMAKE):
 	chmod u+x $(CMAKE)
 endif
 
+# cURL DoH URL
+ifneq ($(DOH_URL),)
+override CURL_DOH_URL := --doh-url $(DOH_URL)
+endif
+
 cmake: $(CMAKE)
 
 # AppImageTool
 appimagetool:
-	curl -Lo appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$(ARCH).AppImage
+	curl $(CURL_DOH_URL) -Lo appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$(ARCH).AppImage
 	chmod u+x appimagetool
 ifneq ($(QEMU),)
 # Extract the AppImageTool
@@ -86,7 +91,7 @@ installdir/lib/libSDL2.so: $(SDL2_PATH)/build/Makefile
 override LIBOGG_FILE := libogg-$(LIBOGG_VERSION)
 
 $(LIBOGG_FILE).tar.gz:
-	curl -Lo $(LIBOGG_FILE).tar.gz http://downloads.xiph.org/releases/ogg/$(LIBOGG_FILE).tar.gz
+	curl $(CURL_DOH_URL) -Lo $(LIBOGG_FILE).tar.gz http://downloads.xiph.org/releases/ogg/$(LIBOGG_FILE).tar.gz
 
 $(LIBOGG_FILE)/configure: $(LIBOGG_FILE).tar.gz
 	tar xzf $(LIBOGG_FILE).tar.gz
@@ -104,7 +109,7 @@ installdir/lib/libogg.so: $(LIBOGG_FILE)/build/Makefile
 override LIBVORBIS_FILE := libvorbis-$(LIBVORBIS_VERSION)
 
 $(LIBVORBIS_FILE).tar.gz:
-	curl -Lo $(LIBVORBIS_FILE).tar.gz http://downloads.xiph.org/releases/vorbis/$(LIBVORBIS_FILE).tar.gz
+	curl $(CURL_DOH_URL) -Lo $(LIBVORBIS_FILE).tar.gz http://downloads.xiph.org/releases/vorbis/$(LIBVORBIS_FILE).tar.gz
 
 $(LIBVORBIS_FILE)/configure: $(LIBVORBIS_FILE).tar.gz
 	tar xzf $(LIBVORBIS_FILE).tar.gz
@@ -124,15 +129,15 @@ installdir/lib/libvorbis.so: $(LIBVORBIS_FILE)/build/Makefile
 override LIBTHEORA_FILE := libtheora-$(LIBTHEORA_VERSION)
 
 $(LIBTHEORA_FILE).tar.gz:
-	curl -Lo $(LIBTHEORA_FILE).tar.gz http://downloads.xiph.org/releases/theora/$(LIBTHEORA_FILE).tar.gz
+	curl $(CURL_DOH_URL) -Lo $(LIBTHEORA_FILE).tar.gz http://downloads.xiph.org/releases/theora/$(LIBTHEORA_FILE).tar.gz
 
 $(LIBTHEORA_FILE)/configure: $(LIBTHEORA_FILE).tar.gz
 	tar xzf $(LIBTHEORA_FILE).tar.gz
 # Their config.guess and config.sub can't detect ARM64
 ifeq ($(ARCH),aarch64)
-	curl -o $(LIBTHEORA_FILE)/config.guess "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD"
+	curl $(CURL_DOH_URL) -o $(LIBTHEORA_FILE)/config.guess "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD"
 	chmod u+x $(LIBTHEORA_FILE)/config.guess
-	curl -o $(LIBTHEORA_FILE)/config.sub "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD"
+	curl $(CURL_DOH_URL) -o $(LIBTHEORA_FILE)/config.sub "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD"
 	chmod u+x $(LIBTHEORA_FILE)/config.sub
 endif
 	touch $(LIBTHEORA_FILE)/configure
@@ -211,7 +216,7 @@ installdir/lib/libopenal.so: $(OPENAL_PATH)/build/CMakeCache.txt
 override BZIP2_FILE := bzip2-$(BZIP2_VERSION)
 
 $(BZIP2_FILE).tar.gz:
-	curl -Lo $(BZIP2_FILE).tar.gz https://sourceware.org/pub/bzip2/$(BZIP2_FILE).tar.gz
+	curl $(CURL_DOH_URL) -Lo $(BZIP2_FILE).tar.gz https://sourceware.org/pub/bzip2/$(BZIP2_FILE).tar.gz
 
 $(BZIP2_FILE)/Makefile: $(BZIP2_FILE).tar.gz
 	tar xzf $(BZIP2_FILE).tar.gz
@@ -225,7 +230,7 @@ installdir/bzip2installed.txt: $(BZIP2_FILE)/Makefile
 override FT_FILE := freetype-$(FT_VERSION)
 
 $(FT_FILE).tar.gz:
-	curl -Lo $(FT_FILE).tar.gz https://download.savannah.gnu.org/releases/freetype/$(FT_FILE).tar.gz
+	curl $(CURL_DOH_URL) -Lo $(FT_FILE).tar.gz https://download.savannah.gnu.org/releases/freetype/$(FT_FILE).tar.gz
 
 $(FT_FILE)/configure: $(FT_FILE).tar.gz
 	tar xzf $(FT_FILE).tar.gz
@@ -243,7 +248,7 @@ installdir/lib/libfreetype.so: $(FT_FILE)/build/Makefile
 override MPG123_FILE := mpg123-$(MPG123_VERSION)
 
 $(MPG123_FILE).tar.bz2:
-	curl -Lo $(MPG123_FILE).tar.bz2 https://www.mpg123.de/download/$(MPG123_FILE).tar.bz2
+	curl $(CURL_DOH_URL) -Lo $(MPG123_FILE).tar.bz2 https://www.mpg123.de/download/$(MPG123_FILE).tar.bz2
 
 $(MPG123_FILE)/configure: $(MPG123_FILE).tar.bz2
 	tar xf $(MPG123_FILE).tar.bz2
@@ -261,7 +266,7 @@ installdir/lib/libmpg123.so: $(MPG123_FILE)/builddir/Makefile
 override LIBMODPLUG_FILE := libmodplug-$(LIBMODPLUG_VERSION)
 
 $(LIBMODPLUG_FILE).tar.gz:
-	curl -Lo $(LIBMODPLUG_FILE).tar.gz http://sourceforge.net/projects/modplug-xmms/files/libmodplug/$(LIBMODPLUG_VERSION)/$(LIBMODPLUG_FILE).tar.gz/download
+	curl $(CURL_DOH_URL) -Lo $(LIBMODPLUG_FILE).tar.gz http://sourceforge.net/projects/modplug-xmms/files/libmodplug/$(LIBMODPLUG_VERSION)/$(LIBMODPLUG_FILE).tar.gz/download
 
 $(LIBMODPLUG_FILE)/configure: $(LIBMODPLUG_FILE).tar.gz
 	tar xzf $(LIBMODPLUG_FILE).tar.gz
@@ -311,9 +316,14 @@ installdir/bin/love: $(LOVE_PATH)/build/Makefile
 	strip installdir/bin/love
 	-strip installdir/lib/liblove*
 
-installdir/AppRun: AppRun.c installdir/bin/love
-	$(CC) -o installdir/AppRun AppRun.c
-	strip installdir/AppRun
+installdir/love.sh: love.sh
+	mkdir -p installdir
+	cp love.sh installdir/love.sh
+	touch installdir/love.sh
+
+installdir/AppRun: love.sh installdir/bin/love
+	mkdir -p installdir
+	cp love.sh installdir/AppRun
 
 installdir/love.desktop: $(LOVE_PATH)/platform/unix/love.desktop.in
 	cat $(LOVE_PATH)/platform/unix/love.desktop.in | sed 's/@bindir@\///' > installdir/love.desktop
