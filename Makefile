@@ -10,10 +10,10 @@ ARCH := $(shell uname -m)
 CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1-linux-$(shell uname -m).sh
 
 # Project branches (for git-based projects)
-LOVE_BRANCH := main
-SDL2_BRANCH := release-2.0.22
+LOVE_BRANCH := 12.0-development
+SDL2_BRANCH := release-2.24.0
 LUAJIT_BRANCH := v2.1
-OPENAL_BRANCH := 1.22.0
+OPENAL_BRANCH := 1.22.2
 BROTLI_BRANCH := v1.0.9
 ZLIB_BRANCH := v1.2.12
 
@@ -21,10 +21,8 @@ ZLIB_BRANCH := v1.2.12
 LIBOGG_VERSION := 1.3.5
 LIBVORBIS_VERSION := 1.3.7
 LIBTHEORA_VERSION := 1.2.0alpha1
-LIBPNG_VERSION := 1.6.37
 FT_VERSION := 2.12.1
 BZIP2_VERSION := 1.0.8
-MPG123_VERSION := 1.29.3
 LIBMODPLUG_VERSION := 0.8.8.5
 
 # Output AppImage
@@ -169,24 +167,6 @@ installdir/lib/libz.so: $(ZLIB_PATH)/build/Makefile
 	cd $(ZLIB_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 	strip installdir/lib/libz.so
 
-# libpng
-override LIBPNG_FILE := libpng-$(LIBPNG_VERSION)
-
-$(LIBPNG_FILE).tar.gz:
-	curl -Lo $(LIBPNG_FILE).tar.gz http://prdownloads.sourceforge.net/libpng/$(LIBPNG_FILE).tar.gz?download
-
-$(LIBPNG_FILE)/configure: $(LIBPNG_FILE).tar.gz
-	tar xzf $(LIBPNG_FILE).tar.gz
-	touch $(LIBPNG_FILE)/configure
-
-$(LIBPNG_FILE)/build/Makefile: $(LIBPNG_FILE)/configure installdir/lib/libz.so
-	mkdir -p $(LIBPNG_FILE)/build
-	cd $(LIBPNG_FILE)/build && LDFLAGS="-L$(INSTALLPREFIX)/lib" CFLAGS="-I$(INSTALLPREFIX)/include" CPPFLAGS="-I$(INSTALLPREFIX)/include" $(CONFIGURE)
-
-installdir/lib/libpng16.so: $(LIBPNG_FILE)/build/Makefile
-	cd $(LIBPNG_FILE)/build && CFLAGS="-I$(INSTALLPREFIX)/include" $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libpng16.so
-
 # Brotli
 override BROTLI_PATH := brotli-$(BROTLI_BRANCH)
 
@@ -239,31 +219,13 @@ $(FT_FILE)/configure: $(FT_FILE).tar.gz
 	tar xzf $(FT_FILE).tar.gz
 	touch $(FT_FILE)/configure
 
-$(FT_FILE)/build/Makefile: $(FT_FILE)/configure installdir/bzip2installed.txt installdir/lib/libpng16.so installdir/lib/libz.so installdir/lib/libbrotlidec.so
+$(FT_FILE)/build/Makefile: $(FT_FILE)/configure installdir/bzip2installed.txt installdir/lib/libz.so installdir/lib/libbrotlidec.so
 	mkdir -p $(FT_FILE)/build
 	cd $(FT_FILE)/build && CFLAGS="-I$(INSTALLPREFIX)/include" LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib -Wl,--no-undefined" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig ../configure --prefix=$(INSTALLPREFIX)
 
 installdir/lib/libfreetype.so: $(FT_FILE)/build/Makefile
 	cd $(FT_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 	strip installdir/lib/libfreetype.so
-
-# Mpg123
-override MPG123_FILE := mpg123-$(MPG123_VERSION)
-
-$(MPG123_FILE).tar.bz2:
-	curl $(CURL_DOH_URL) -Lo $(MPG123_FILE).tar.bz2 https://www.mpg123.de/download/$(MPG123_FILE).tar.bz2
-
-$(MPG123_FILE)/configure: $(MPG123_FILE).tar.bz2
-	tar xf $(MPG123_FILE).tar.bz2
-	touch $(MPG123_FILE)/configure
-
-$(MPG123_FILE)/builddir/Makefile: $(MPG123_FILE)/configure
-	mkdir -p $(MPG123_FILE)/builddir
-	cd $(MPG123_FILE)/builddir && $(CONFIGURE)
-
-installdir/lib/libmpg123.so: $(MPG123_FILE)/builddir/Makefile
-	cd $(MPG123_FILE)/builddir && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libmpg123.so
 
 # libmodplug
 override LIBMODPLUG_FILE := libmodplug-$(LIBMODPLUG_VERSION)
@@ -301,7 +263,7 @@ override LOVE_PATH := love2d-$(LOVE_BRANCH)
 $(LOVE_PATH)/CMakeLists.txt:
 	git clone --depth 1 -b $(LOVE_BRANCH) https://github.com/love2d/love $(LOVE_PATH)
 
-$(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libmpg123.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so
+$(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so
 	cd $(LOVE_PATH) && bash platform/unix/genmodules
 	cp $(LOVE_PATH)/platform/unix/configure.ac $(LOVE_PATH) && cp $(LOVE_PATH)/platform/unix/Makefile.am $(LOVE_PATH)
 	cd $(LOVE_PATH) && autoheader
@@ -371,7 +333,7 @@ else
 	cd squashfs-root/usr/lib && ../../AppRun ../../../installdir2 ../../../$(APPIMAGE_OUTPUT)
 endif
 
-getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(MPG123_FILE).tar.bz2 $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt
+getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt
 
 AppImage: $(APPIMAGE_OUTPUT)
 
