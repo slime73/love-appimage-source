@@ -30,6 +30,9 @@ LIBMODPLUG_VERSION := 0.8.8.5
 # Output AppImage
 APPIMAGE_OUTPUT := love-$(LOVE_BRANCH).AppImage
 
+# Output tar
+TAR_OUTPUT := love-$(LOVE_BRANCH).tar.gz
+
 # No need to change anything beyond this line
 override INSTALLPREFIX := $(CURDIR)/installdir
 
@@ -335,46 +338,46 @@ installdir/license.txt: $(LOVE_PATH)/license.txt
 	cp $(LOVE_PATH)/license.txt installdir/license.txt
 
 appimage-prepare: installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool
-	cp -r installdir installdir2
+	mkdir -p installdir2/lib installdir2/bin
+	cp installdir/AppRun installdir2/AppRun
+	cp installdir/license.txt installdir2/license.txt
+	cp installdir/love.desktop installdir2/love.desktop
+	cp installdir/love.svg installdir2/love.svg
+	cp -L installdir/bin/love installdir2/bin/love
+	strip installdir2/bin/love
+	patchelf --set-rpath '$$ORIGIN/../lib' installdir2/bin/love
+	ldd installdir/bin/love | while read line; do \
+		dll=`echo $$line | sed 's/\s.*//'`; \
+		if [ -f installdir/lib/$$dll ]; then \
+			cp -L installdir/lib/$$dll installdir2/lib/$$dll; \
+			strip installdir2/lib/$$dll; \
+			patchelf --set-rpath '$$ORIGIN/../lib' installdir2/lib/$$dll; \
+			echo $$dll; \
+		fi \
+	done
+	cp -r installdir/share installdir2/
+	-rm -rf installdir2/share/aclocal
 	-rm -rf installdir2/share/man
 	-rm -rf installdir2/share/doc
 	-rm -rf installdir2/share/openal
-	-rm -rf installdir2/lib/mpg123
-	-rm -rf installdir2/lib/cmake
-	-rm -rf installdir2/lib/pkgconfig
-	-rm -rf installdir2/lib/*.a
-	-rm -rf installdir2/lib/*.la
-	-rm -rf installdir2/lib/*.la
-	-rm -rf installdir2/include
-	-rm -rf installdir2/man
-	-find installdir2/bin -type l -exec rm -rf {} +
-	-find installdir2/bin ! -name 'luajit*' ! -name 'love' -type f -exec rm -f {} +
-	-strip installdir2/lib/*
 
-$(APPIMAGE_OUTPUT): installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool
-	cp -r installdir installdir2
-	-rm -rf installdir2/share/man
-	-rm -rf installdir2/share/doc
-	-rm -rf installdir2/share/openal
-	-rm -rf installdir2/lib/mpg123
-	-rm -rf installdir2/lib/cmake
-	-rm -rf installdir2/lib/pkgconfig
-	-rm -rf installdir2/lib/*.a
-	-rm -rf installdir2/lib/*.la
-	-rm -rf installdir2/lib/*.la
-	-rm -rf installdir2/include
-	-rm -rf installdir2/man
-	-find installdir2/bin -type l -exec rm -rf {} +
-	-find installdir2/bin ! -name 'luajit*' ! -name 'love' -type f -exec rm -f {} +
-	-strip installdir2/lib/*
+$(TAR_OUTPUT): installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool appimage-prepare
+	cd installdir2; tar -cvzf ../$(TAR_OUTPUT) *
+
+$(APPIMAGE_OUTPUT): installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool appimage-prepare
 ifeq ($(QEMU),)
 	./appimagetool installdir2 $(APPIMAGE_OUTPUT)
 else
 	cd squashfs-root/usr/lib && ../../AppRun ../../../installdir2 ../../../$(APPIMAGE_OUTPUT)
 endif
-	rm -rf installdir2
 
 getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(MPG123_FILE).tar.bz2 $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt
 
-.DEFAULT_GOAL := $(APPIMAGE_OUTPUT)
-.PHONY := getdeps cmake appimage-prepare
+AppImage: $(APPIMAGE_OUTPUT)
+
+tar: $(TAR_OUTPUT)
+
+default: $(APPIMAGE_OUTPUT) $(TAR_OUTPUT)
+
+.DEFAULT_GOAL := default
+.PHONY := default getdeps cmake appimage-prepare AppImage tar
