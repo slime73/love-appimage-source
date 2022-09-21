@@ -289,6 +289,7 @@ installdir/love.sh: love.sh
 installdir/AppRun: love.sh installdir/bin/love
 	mkdir -p installdir
 	cp love.sh installdir/AppRun
+	chmod +x installdir/AppRun
 
 installdir/love.desktop: $(LOVE_PATH)/platform/unix/love.desktop.in
 	cat $(LOVE_PATH)/platform/unix/love.desktop.in | sed 's/@bindir@\///' > installdir/love.desktop
