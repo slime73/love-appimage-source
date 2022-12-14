@@ -7,11 +7,11 @@ NUMBER_OF_PROCESSORS := $(shell nproc)
 ARCH := $(shell uname -m)
 
 # CMake URL
-CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v3.24.1/cmake-3.24.1-linux-$(shell uname -m).sh
+CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-$(shell uname -m).sh
 
 # Project branches (for git-based projects)
 LOVE_BRANCH := main
-SDL2_BRANCH := release-2.24.1
+SDL2_BRANCH := release-2.26.1
 LUAJIT_BRANCH := v2.1
 OPENAL_BRANCH := 1.22.2
 BROTLI_BRANCH := v1.0.9
