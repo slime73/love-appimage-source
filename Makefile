@@ -37,7 +37,7 @@ override INSTALLPREFIX := $(CURDIR)/installdir
 
 override CMAKE_PREFIX := $(CURDIR)/cmake
 CMAKE := $(CMAKE_PREFIX)/bin/cmake
-override CMAKE_OPTS := -DCMAKE_INSTALL_RPATH='$$ORIGIN/../lib' -DCMAKE_INSTALL_PREFIX=$(INSTALLPREFIX)
+override CMAKE_OPTS := --install-prefix $(INSTALLPREFIX) -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_RPATH='$$ORIGIN/../lib'
 override CONFIGURE := LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' $$LDFLAGS" ../configure --prefix=$(INSTALLPREFIX)
 
 # CMake setup
@@ -175,7 +175,7 @@ $(BROTLI_PATH)/CMakeLists.txt:
 	git clone --depth 1 -b $(BROTLI_BRANCH) https://github.com/google/brotli $(BROTLI_PATH)
 
 $(BROTLI_PATH)/build/CMakeCache.txt: $(CMAKE) $(BROTLI_PATH)/CMakeLists.txt
-	$(CMAKE) -B$(BROTLI_PATH)/build -H$(BROTLI_PATH) $(CMAKE_OPTS)
+	$(CMAKE) -B$(BROTLI_PATH)/build -S$(BROTLI_PATH) $(CMAKE_OPTS)
 
 installdir/lib/libbrotlidec.so: $(BROTLI_PATH)/build/CMakeCache.txt
 	$(CMAKE) --build $(BROTLI_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
@@ -190,7 +190,7 @@ $(OPENAL_PATH)/CMakeLists.txt:
 	git clone --depth 1 -b $(OPENAL_BRANCH) https://github.com/kcat/openal-soft $(OPENAL_PATH)
 
 $(OPENAL_PATH)/build/CMakeCache.txt: $(CMAKE) $(OPENAL_PATH)/CMakeLists.txt
-	$(CMAKE) -B$(OPENAL_PATH)/build -H$(OPENAL_PATH) $(CMAKE_OPTS) -DALSOFT_EXAMPLES=0 -DALSOFT_BACKEND_SNDIO=0
+	$(CMAKE) -B$(OPENAL_PATH)/build -S$(OPENAL_PATH) $(CMAKE_OPTS) -DALSOFT_EXAMPLES=0 -DALSOFT_BACKEND_SNDIO=0
 
 installdir/lib/libopenal.so: $(OPENAL_PATH)/build/CMakeCache.txt
 	$(CMAKE) --build $(OPENAL_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
