@@ -16,6 +16,7 @@ LUAJIT_BRANCH := v2.1
 OPENAL_BRANCH := 1.22.2
 BROTLI_BRANCH := v1.0.9
 ZLIB_BRANCH := v1.2.13
+HARFBUZZ_BRANCH := 6.0.0
 
 # Project versions (for downloadable tars)
 LIBOGG_VERSION := 1.3.5
@@ -227,6 +228,18 @@ installdir/lib/libfreetype.so: $(FT_FILE)/build/Makefile
 	cd $(FT_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 	strip installdir/lib/libfreetype.so
 
+# harfbuzz
+override HB_PATH := harfbuzz-$(HARFBUZZ_BRANCH)
+
+$(HB_PATH)/CMakeLists.txt:
+	git clone --depth 1 -b $(HARFBUZZ_BRANCH) https://github.com/harfbuzz/harfbuzz $(HB_PATH)
+
+$(HB_PATH)/build/CMakeCache.txt: $(HB_PATH)/CMakeLists.txt installdir/lib/libfreetype.so
+	$(CMAKE) -B$(HB_PATH)/build -S$(HB_PATH) $(CMAKE_OPTS) -DHB_HAVE_FREETYPE=1 -DHB_BUILD_SUBSET=0 -DBUILD_SHARED_LIBS=0 -DCMAKE_POSITION_INDEPENDENT_CODE=1
+
+installdir/lib/libharfbuzz.a: $(HB_PATH)/build/CMakeCache.txt
+	$(CMAKE) --build $(HB_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
+
 # libmodplug
 override LIBMODPLUG_FILE := libmodplug-$(LIBMODPLUG_VERSION)
 
@@ -263,7 +276,7 @@ override LOVE_PATH := love2d-$(LOVE_BRANCH)
 $(LOVE_PATH)/CMakeLists.txt:
 	git clone --depth 1 -b $(LOVE_BRANCH) https://github.com/love2d/love $(LOVE_PATH)
 
-$(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so
+$(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so installdir/lib/libharfbuzz.a
 	cd $(LOVE_PATH) && bash platform/unix/genmodules
 	cp $(LOVE_PATH)/platform/unix/configure.ac $(LOVE_PATH) && cp $(LOVE_PATH)/platform/unix/Makefile.am $(LOVE_PATH)
 	cd $(LOVE_PATH) && autoheader
@@ -334,7 +347,7 @@ else
 	cd squashfs-root/usr/lib && ../../AppRun ../../../installdir2 ../../../$(APPIMAGE_OUTPUT)
 endif
 
-getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt
+getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt $(HB_PATH)/CMakeLists.txt
 
 AppImage: $(APPIMAGE_OUTPUT)
 

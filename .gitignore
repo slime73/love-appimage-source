@@ -10,6 +10,7 @@ cmake/
 cmake_install.sh
 cmakewrapper.sh
 freetype-*/
+harfbuzz-*/
 installdir/
 installdir2/
 libmodplug-*/
