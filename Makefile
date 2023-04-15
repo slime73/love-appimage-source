@@ -17,13 +17,13 @@ LUAJIT_BRANCH := v2.1
 OPENAL_BRANCH := 1.23.1
 BROTLI_BRANCH := v1.0.9
 ZLIB_BRANCH := v1.2.13
+FT_BRANCH := VER-2-13-0
 
 # Project versions (for downloadable tars)
 LIBOGG_VERSION := 1.3.5
 LIBVORBIS_VERSION := 1.3.7
 LIBTHEORA_VERSION := 1.2.0alpha1
 LIBPNG_VERSION := 1.6.39
-FT_VERSION := 2.13.0
 BZIP2_VERSION := 1.0.8
 MPG123_VERSION := 1.31.3
 LIBMODPLUG_VERSION := 0.8.8.5
@@ -217,21 +217,17 @@ installdir/bzip2installed.txt: $(BZIP2_FILE)/Makefile
 	touch installdir/bzip2installed.txt
 
 # FreeType
-override FT_FILE := freetype-$(FT_VERSION)
+override FT_PATH := freetype-$(FT_BRANCH)
 
-$(FT_FILE).tar.gz:
-	curl $(CURL_DOH_URL) -Lfo $(FT_FILE).tar.gz https://download.savannah.gnu.org/releases/freetype/$(FT_FILE).tar.gz
+$(FT_PATH)/configure:
+	git clone --depth 1 -b $(FT_BRANCH) https://gitlab.freedesktop.org/freetype/freetype.git $(FT_PATH)
 
-$(FT_FILE)/configure: $(FT_FILE).tar.gz
-	tar xzf $(FT_FILE).tar.gz
-	touch $(FT_FILE)/configure
+$(FT_PATH)/build/Makefile: $(FT_PATH)/configure installdir/bzip2installed.txt installdir/lib/libpng16.so installdir/lib/libz.so installdir/lib/libbrotlidec.so
+	mkdir -p $(FT_PATH)/build
+	cd $(FT_PATH)/build && CFLAGS="-I$(INSTALLPREFIX)/include" LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib -Wl,--no-undefined" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig ../configure --prefix=$(INSTALLPREFIX)
 
-$(FT_FILE)/build/Makefile: $(FT_FILE)/configure installdir/bzip2installed.txt installdir/lib/libpng16.so installdir/lib/libz.so installdir/lib/libbrotlidec.so
-	mkdir -p $(FT_FILE)/build
-	cd $(FT_FILE)/build && CFLAGS="-I$(INSTALLPREFIX)/include" LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib -Wl,--no-undefined" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig ../configure --prefix=$(INSTALLPREFIX)
-
-installdir/lib/libfreetype.so: $(FT_FILE)/build/Makefile
-	cd $(FT_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
+installdir/lib/libfreetype.so: $(FT_PATH)/build/Makefile
+	cd $(FT_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 
 # Mpg123
 override MPG123_FILE := mpg123-$(MPG123_VERSION)
@@ -355,7 +351,7 @@ else
 	cd squashfs-root/usr/lib && ../../AppRun ../../../installdir2 ../../../$(APPIMAGE_OUTPUT)
 endif
 
-getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(MPG123_FILE).tar.bz2 $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt
+getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(LIBPNG_FILE).tar.gz $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_PATH)/configure $(MPG123_FILE).tar.bz2 $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt
 
 AppImage: $(APPIMAGE_OUTPUT)
 
