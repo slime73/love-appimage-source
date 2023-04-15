@@ -220,7 +220,7 @@ installdir/bzip2installed.txt: $(BZIP2_FILE)/Makefile
 override FT_PATH := freetype-$(FT_BRANCH)
 
 $(FT_PATH)/configure:
-	git clone --depth 1 -b $(FT_BRANCH) https://gitlab.freedesktop.org/freetype/freetype.git $(FT_PATH)
+	git clone --depth 1 -b $(FT_BRANCH) --recurse-submodules https://gitlab.freedesktop.org/freetype/freetype.git $(FT_PATH)
 
 $(FT_PATH)/build/Makefile: $(FT_PATH)/configure installdir/bzip2installed.txt installdir/lib/libpng16.so installdir/lib/libz.so installdir/lib/libbrotlidec.so
 	mkdir -p $(FT_PATH)/build
