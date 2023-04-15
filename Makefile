@@ -40,7 +40,7 @@ override INSTALLPREFIX := $(CURDIR)/installdir
 override CMAKE_PREFIX := $(CURDIR)/cmake
 CMAKE := $(CMAKE_PREFIX)/bin/cmake
 override CMAKE_OPTS := --install-prefix $(INSTALLPREFIX) -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_RPATH='$$ORIGIN/../lib'
-override CONFIGURE := LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' $$LDFLAGS" ../configure --prefix=$(INSTALLPREFIX)
+override CONFIGURE := LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' $$LDFLAGS" LD_LIBRARY_PATH=$PWD/installdir/lib:${LD_LIBRARY_PATH} ../configure --prefix=$(INSTALLPREFIX)
 
 # CMake setup
 ifeq ($(SYSTEM_CMAKE),)
