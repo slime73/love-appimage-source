@@ -40,12 +40,12 @@ override INSTALLPREFIX := $(CURDIR)/installdir
 override CMAKE_PREFIX := $(CURDIR)/cmake
 CMAKE := $(CMAKE_PREFIX)/bin/cmake
 override CMAKE_OPTS := --install-prefix $(INSTALLPREFIX) -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_INSTALL_RPATH='$$ORIGIN/../lib'
-override CONFIGURE := LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' $$LDFLAGS" LD_LIBRARY_PATH=$(CURDIR)/installdir/lib:${LD_LIBRARY_PATH} ../configure --prefix=$(INSTALLPREFIX)
+override CONFIGURE := LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' $$LDFLAGS" LD_LIBRARY_PATH=$(INSTALLPREFIX)/lib:${LD_LIBRARY_PATH} ../configure --prefix=$(INSTALLPREFIX)
 
 # CMake setup
 ifeq ($(SYSTEM_CMAKE),)
 cmake_install.sh:
-	curl $(CURL_DOH_URL) -Lo cmake_install.sh $(CMAKE_URL)
+	curl $(CURL_DOH_URL) -Lfo cmake_install.sh $(CMAKE_URL)
 	chmod u+x cmake_install.sh
 
 $(CMAKE): cmake_install.sh
@@ -70,7 +70,7 @@ cmake: $(CMAKE)
 
 # AppImageTool
 appimagetool:
-	curl $(CURL_DOH_URL) -Lo appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$(ARCH).AppImage
+	curl $(CURL_DOH_URL) -Lfo appimagetool https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-$(ARCH).AppImage
 	chmod u+x appimagetool
 ifneq ($(QEMU),)
 # Extract the AppImageTool
@@ -89,13 +89,12 @@ $(SDL2_PATH)/build/Makefile: $(SDL2_PATH)/configure
 
 installdir/lib/libSDL2.so: $(SDL2_PATH)/build/Makefile
 	cd $(SDL2_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libSDL2.so
 
 # libogg
 override LIBOGG_FILE := libogg-$(LIBOGG_VERSION)
 
 $(LIBOGG_FILE).tar.gz:
-	curl $(CURL_DOH_URL) -Lo $(LIBOGG_FILE).tar.gz http://downloads.xiph.org/releases/ogg/$(LIBOGG_FILE).tar.gz
+	curl $(CURL_DOH_URL) -Lfo $(LIBOGG_FILE).tar.gz http://downloads.xiph.org/releases/ogg/$(LIBOGG_FILE).tar.gz
 
 $(LIBOGG_FILE)/configure: $(LIBOGG_FILE).tar.gz
 	tar xzf $(LIBOGG_FILE).tar.gz
@@ -107,13 +106,12 @@ $(LIBOGG_FILE)/build/Makefile: $(LIBOGG_FILE)/configure
 
 installdir/lib/libogg.so: $(LIBOGG_FILE)/build/Makefile
 	cd $(LIBOGG_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libogg.so
 
 # libvorbis
 override LIBVORBIS_FILE := libvorbis-$(LIBVORBIS_VERSION)
 
 $(LIBVORBIS_FILE).tar.gz:
-	curl $(CURL_DOH_URL) -Lo $(LIBVORBIS_FILE).tar.gz http://downloads.xiph.org/releases/vorbis/$(LIBVORBIS_FILE).tar.gz
+	curl $(CURL_DOH_URL) -Lfo $(LIBVORBIS_FILE).tar.gz http://downloads.xiph.org/releases/vorbis/$(LIBVORBIS_FILE).tar.gz
 
 $(LIBVORBIS_FILE)/configure: $(LIBVORBIS_FILE).tar.gz
 	tar xzf $(LIBVORBIS_FILE).tar.gz
@@ -125,23 +123,20 @@ $(LIBVORBIS_FILE)/build/Makefile: $(LIBVORBIS_FILE)/configure installdir/lib/lib
 
 installdir/lib/libvorbis.so: $(LIBVORBIS_FILE)/build/Makefile
 	cd $(LIBVORBIS_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libvorbis.so
-	strip installdir/lib/libvorbisfile.so
-	strip installdir/lib/libvorbisenc.so
 
 # libtheora
 override LIBTHEORA_FILE := libtheora-$(LIBTHEORA_VERSION)
 
 $(LIBTHEORA_FILE).tar.gz:
-	curl $(CURL_DOH_URL) -Lo $(LIBTHEORA_FILE).tar.gz http://downloads.xiph.org/releases/theora/$(LIBTHEORA_FILE).tar.gz
+	curl $(CURL_DOH_URL) -Lfo $(LIBTHEORA_FILE).tar.gz http://downloads.xiph.org/releases/theora/$(LIBTHEORA_FILE).tar.gz
 
 $(LIBTHEORA_FILE)/configure: $(LIBTHEORA_FILE).tar.gz
 	tar xzf $(LIBTHEORA_FILE).tar.gz
 # Their config.guess and config.sub can't detect ARM64
 ifeq ($(ARCH),aarch64)
-	curl $(CURL_DOH_URL) -o $(LIBTHEORA_FILE)/config.guess "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD"
+	curl $(CURL_DOH_URL) -Lfo $(LIBTHEORA_FILE)/config.guess "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.guess;hb=HEAD"
 	chmod u+x $(LIBTHEORA_FILE)/config.guess
-	curl $(CURL_DOH_URL) -o $(LIBTHEORA_FILE)/config.sub "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD"
+	curl $(CURL_DOH_URL) -Lfo $(LIBTHEORA_FILE)/config.sub "https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub;hb=HEAD"
 	chmod u+x $(LIBTHEORA_FILE)/config.sub
 endif
 	touch $(LIBTHEORA_FILE)/configure
@@ -152,9 +147,6 @@ $(LIBTHEORA_FILE)/build/Makefile: $(LIBTHEORA_FILE)/configure installdir/lib/lib
 
 installdir/lib/libtheora.so: $(LIBTHEORA_FILE)/build/Makefile
 	cd $(LIBTHEORA_FILE)/build && $(MAKE) install -j $(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libtheora.so
-	strip installdir/lib/libtheoradec.so
-	strip installdir/lib/libtheoraenc.so
 
 # zlib
 override ZLIB_PATH := zlib-$(ZLIB_BRANCH)
@@ -168,7 +160,6 @@ $(ZLIB_PATH)/build/Makefile: $(ZLIB_PATH)/configure
 
 installdir/lib/libz.so: $(ZLIB_PATH)/build/Makefile
 	cd $(ZLIB_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libz.so
 
 # libpng
 override LIBPNG_FILE := libpng-$(LIBPNG_VERSION)
@@ -186,7 +177,6 @@ $(LIBPNG_FILE)/build/Makefile: $(LIBPNG_FILE)/configure installdir/lib/libz.so
 
 installdir/lib/libpng16.so: $(LIBPNG_FILE)/build/Makefile
 	cd $(LIBPNG_FILE)/build && CFLAGS="-I$(INSTALLPREFIX)/include" $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libpng16.so
 
 # Brotli
 override BROTLI_PATH := brotli-$(BROTLI_BRANCH)
@@ -199,9 +189,6 @@ $(BROTLI_PATH)/build/CMakeCache.txt: $(CMAKE) $(BROTLI_PATH)/CMakeLists.txt
 
 installdir/lib/libbrotlidec.so: $(BROTLI_PATH)/build/CMakeCache.txt
 	$(CMAKE) --build $(BROTLI_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libbrotlicommon.so
-	strip installdir/lib/libbrotlidec.so
-	strip installdir/lib/libbrotlienc.so
 
 # OpenAL-soft
 override OPENAL_PATH := openal-soft-$(OPENAL_BRANCH)
@@ -214,13 +201,12 @@ $(OPENAL_PATH)/build/CMakeCache.txt: $(CMAKE) $(OPENAL_PATH)/CMakeLists.txt
 
 installdir/lib/libopenal.so: $(OPENAL_PATH)/build/CMakeCache.txt
 	$(CMAKE) --build $(OPENAL_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libopenal.so
 
 # BZip2
 override BZIP2_FILE := bzip2-$(BZIP2_VERSION)
 
 $(BZIP2_FILE).tar.gz:
-	curl $(CURL_DOH_URL) -Lo $(BZIP2_FILE).tar.gz https://sourceware.org/pub/bzip2/$(BZIP2_FILE).tar.gz
+	curl $(CURL_DOH_URL) -Lfo $(BZIP2_FILE).tar.gz https://sourceware.org/pub/bzip2/$(BZIP2_FILE).tar.gz
 
 $(BZIP2_FILE)/Makefile: $(BZIP2_FILE).tar.gz
 	tar xzf $(BZIP2_FILE).tar.gz
@@ -234,7 +220,7 @@ installdir/bzip2installed.txt: $(BZIP2_FILE)/Makefile
 override FT_FILE := freetype-$(FT_VERSION)
 
 $(FT_FILE).tar.gz:
-	curl $(CURL_DOH_URL) -Lo $(FT_FILE).tar.gz https://download.savannah.gnu.org/releases/freetype/$(FT_FILE).tar.gz
+	curl $(CURL_DOH_URL) -Lfo $(FT_FILE).tar.gz https://download.savannah.gnu.org/releases/freetype/$(FT_FILE).tar.gz
 
 $(FT_FILE)/configure: $(FT_FILE).tar.gz
 	tar xzf $(FT_FILE).tar.gz
@@ -246,13 +232,12 @@ $(FT_FILE)/build/Makefile: $(FT_FILE)/configure installdir/bzip2installed.txt in
 
 installdir/lib/libfreetype.so: $(FT_FILE)/build/Makefile
 	cd $(FT_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libfreetype.so
 
 # Mpg123
 override MPG123_FILE := mpg123-$(MPG123_VERSION)
 
 $(MPG123_FILE).tar.bz2:
-	curl $(CURL_DOH_URL) -Lo $(MPG123_FILE).tar.bz2 https://www.mpg123.de/download/$(MPG123_FILE).tar.bz2
+	curl $(CURL_DOH_URL) -Lfo $(MPG123_FILE).tar.bz2 https://www.mpg123.de/download/$(MPG123_FILE).tar.bz2
 
 $(MPG123_FILE)/configure: $(MPG123_FILE).tar.bz2
 	tar xf $(MPG123_FILE).tar.bz2
@@ -264,13 +249,12 @@ $(MPG123_FILE)/builddir/Makefile: $(MPG123_FILE)/configure
 
 installdir/lib/libmpg123.so: $(MPG123_FILE)/builddir/Makefile
 	cd $(MPG123_FILE)/builddir && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
-	strip installdir/lib/libmpg123.so
 
 # libmodplug
 override LIBMODPLUG_FILE := libmodplug-$(LIBMODPLUG_VERSION)
 
 $(LIBMODPLUG_FILE).tar.gz:
-	curl $(CURL_DOH_URL) -Lo $(LIBMODPLUG_FILE).tar.gz http://sourceforge.net/projects/modplug-xmms/files/libmodplug/$(LIBMODPLUG_VERSION)/$(LIBMODPLUG_FILE).tar.gz/download
+	curl $(CURL_DOH_URL) -Lfo $(LIBMODPLUG_FILE).tar.gz http://sourceforge.net/projects/modplug-xmms/files/libmodplug/$(LIBMODPLUG_VERSION)/$(LIBMODPLUG_FILE).tar.gz/download
 
 $(LIBMODPLUG_FILE)/configure: $(LIBMODPLUG_FILE).tar.gz
 	tar xzf $(LIBMODPLUG_FILE).tar.gz
@@ -293,8 +277,6 @@ installdir/lib/libluajit-5.1.so: $(LUAJIT_PATH)/Makefile
 	cd $(LUAJIT_PATH) && LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib'" $(MAKE) amalg -j$(NUMBER_OF_PROCESSORS) PREFIX=/usr
 	cd $(LUAJIT_PATH) && make install PREFIX=$(INSTALLPREFIX)
 	cd $(LUAJIT_PATH) && make clean
-	strip installdir/lib/libluajit-5.1.so
-	strip installdir/bin/luaji*
 
 # LOVE
 override LOVE_PATH := love2d-$(LOVE_BRANCH)
@@ -317,8 +299,6 @@ $(LOVE_PATH)/build/Makefile: $(LOVE_PATH)/configure
 
 installdir/bin/love: $(LOVE_PATH)/build/Makefile
 	cd $(LOVE_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
-	strip installdir/bin/love
-	-strip installdir/lib/liblove*
 
 installdir/love.sh: love.sh
 	mkdir -p installdir
@@ -339,25 +319,27 @@ installdir/love.svg: $(LOVE_PATH)/platform/unix/love.svg
 installdir/license.txt: $(LOVE_PATH)/license.txt
 	cp $(LOVE_PATH)/license.txt installdir/license.txt
 
-appimage-prepare: installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool
+appimage-prepare $(APPIMAGE_OUTPUT)-debug.tar.gz: installdir/AppRun installdir/love.desktop installdir/love.svg installdir/license.txt appimagetool
 	mkdir -p installdir2/lib installdir2/bin
 	cp installdir/AppRun installdir2/AppRun
 	cp installdir/license.txt installdir2/license.txt
 	cp installdir/love.desktop installdir2/love.desktop
 	cp installdir/love.svg installdir2/love.svg
 	cp -L installdir/bin/love installdir2/bin/love
-	strip installdir2/bin/love
+	mkdir -p debugsym
+	bash $(CURDIR)/separate_debug.sh installdir2/bin/love debugsym/love.debug
 	patchelf --set-rpath '$$ORIGIN/../lib' installdir2/bin/love
 	ldd installdir/bin/love | while read line; do \
 		dll=`echo $$line | sed 's/\s.*//'`; \
 		if [ -f installdir/lib/$$dll ]; then \
 			cp -L installdir/lib/$$dll installdir2/lib/$$dll; \
-			strip installdir2/lib/$$dll; \
+			bash $(CURDIR)/separate_debug.sh installdir2/lib/$$dll debugsym/$$dll.debug; \
 			patchelf --set-rpath '$$ORIGIN/../lib' installdir2/lib/$$dll; \
 			echo $$dll; \
 		fi \
 	done
 	cp -r installdir/share installdir2/
+	cd debugsym; tar -cvzf ../$(APPIMAGE_OUTPUT)-debug.tar.gz *
 	-rm -rf installdir2/share/aclocal
 	-rm -rf installdir2/share/man
 	-rm -rf installdir2/share/doc
@@ -382,4 +364,4 @@ tar: $(TAR_OUTPUT)
 default: $(APPIMAGE_OUTPUT) $(TAR_OUTPUT)
 
 .DEFAULT_GOAL := default
-.PHONY := default getdeps cmake appimage-prepare AppImage tar
+.PHONY := default getdeps cmake appimage-prepare AppImage tar dbgsym
