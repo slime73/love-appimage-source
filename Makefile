@@ -7,23 +7,23 @@ NUMBER_OF_PROCESSORS := $(shell nproc)
 ARCH := $(shell uname -m)
 
 # CMake URL
-CMAKE_VERSION := 3.27.1
+CMAKE_VERSION := 3.27.7
 CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/cmake-$(CMAKE_VERSION)-linux-$(shell uname -m).sh
 
 # Project branches (for git-based projects)
 LOVE_BRANCH := 12.0-development
-SDL2_BRANCH := release-2.28.2
+SDL2_BRANCH := release-2.28.4
 LUAJIT_BRANCH := v2.1
 OPENAL_BRANCH := 1.23.1
 BROTLI_BRANCH := v1.0.9
-ZLIB_BRANCH := v1.2.13
+ZLIB_BRANCH := v1.3
 HARFBUZZ_BRANCH := 6.0.0
 
 # Project versions (for downloadable tars)
 LIBOGG_VERSION := 1.3.5
 LIBVORBIS_VERSION := 1.3.7
 LIBTHEORA_VERSION := 1.2.0alpha1
-FT_VERSION := 2.13.1
+FT_VERSION := 2.13.2
 BZIP2_VERSION := 1.0.8
 LIBMODPLUG_VERSION := 0.8.8.5
 
