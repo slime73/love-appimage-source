@@ -9,7 +9,7 @@ Build
 First, install these dependencies (adapt accordingly for non-Debian distro):
 
 ```sh
-sudo apt-get install autotools-dev automake autoconf libtool patchelf curl
+sudo apt-get install autotools-dev automake autoconf libtool patchelf curl pkg-config
 ```
 
 Then followed by [all dependencies required by SDL](https://github.com/libsdl-org/SDL/blob/main/docs/README-linux.md#build-dependencies), but **not** the SDL itself.
