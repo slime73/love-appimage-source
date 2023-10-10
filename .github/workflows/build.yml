@@ -25,9 +25,9 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: AppImage
-        path: love-main.AppImage
+        path: love-12.0-development.AppImage
     - name: Artifact Tape Archive
       uses: actions/upload-artifact@v3
       with:
         name: tar.gz
-        path: love-main.tar.gz
+        path: love-12.0-development.tar.gz
