@@ -261,21 +261,12 @@ override LOVE_PATH := love2d-$(LOVE_BRANCH)
 $(LOVE_PATH)/CMakeLists.txt:
 	git clone --depth 1 -b $(LOVE_BRANCH) https://github.com/love2d/love $(LOVE_PATH)
 
-$(LOVE_PATH)/configure: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so installdir/lib/libharfbuzz.a
-	cd $(LOVE_PATH) && bash platform/unix/genmodules
-	cp $(LOVE_PATH)/platform/unix/configure.ac $(LOVE_PATH) && cp $(LOVE_PATH)/platform/unix/Makefile.am $(LOVE_PATH)
-	cd $(LOVE_PATH) && autoheader
-	cd $(LOVE_PATH) && libtoolize --force
-	cd $(LOVE_PATH) && aclocal -I $(INSTALLPREFIX)/share/aclocal
-	cd $(LOVE_PATH) && autoconf -I$(INSTALLPREFIX)
-	cd $(LOVE_PATH) && automake -a
-
-$(LOVE_PATH)/build/Makefile: $(LOVE_PATH)/configure
+$(LOVE_PATH)/build/Makefile $(LOVE_PATH)/build/love.desktop: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so installdir/lib/libharfbuzz.a
 	mkdir -p $(LOVE_PATH)/build
-	cd $(LOVE_PATH)/build && CFLAGS="-I$(INSTALLPREFIX)/include" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib" ../configure --prefix=$(INSTALLPREFIX)
+	cd $(LOVE_PATH)/build && CFLAGS="-I$(INSTALLPREFIX)/include" CXXFLAGS="-I$(INSTALLPREFIX)/include" LDFLAGS="-L$(INSTALLPREFIX)/lib" cmake -S .. -B . -DCMAKE_INSTALL_PREFIX=./ -DCMAKE_PREFIX_PATH=$(INSTALLPREFIX)
 
 installdir/bin/love: $(LOVE_PATH)/build/Makefile
-	cd $(LOVE_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
+	cd $(LOVE_PATH)/build && $(MAKE) DESTDIR=$(INSTALLPREFIX) install -j$(NUMBER_OF_PROCESSORS)
 
 installdir/love.sh: love.sh
 	mkdir -p installdir
@@ -287,8 +278,8 @@ installdir/AppRun: love.sh installdir/bin/love
 	cp love.sh installdir/AppRun
 	chmod +x installdir/AppRun
 
-installdir/love.desktop: $(LOVE_PATH)/platform/unix/love.desktop.in
-	cat $(LOVE_PATH)/platform/unix/love.desktop.in | sed 's/@bindir@\///' > installdir/love.desktop
+installdir/love.desktop: $(LOVE_PATH)/build/love.desktop
+	cp $(LOVE_PATH)/build/love.desktop installdir/love.desktop
 
 installdir/love.svg: $(LOVE_PATH)/platform/unix/love.svg
 	cp $(LOVE_PATH)/platform/unix/love.svg installdir/love.svg
