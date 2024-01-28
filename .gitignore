@@ -9,6 +9,7 @@ bzip2-*/
 cmake/
 cmake_install.sh
 cmakewrapper.sh
+debugsym/
 freetype-*/
 harfbuzz-*/
 installdir/
@@ -19,7 +20,6 @@ libpng-*/
 libtheora-*/
 libvorbis-*/
 love2d-*/
-mpg123-*/
 openal-soft-*/
 squashfs-root/
 zlib-*/

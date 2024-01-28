@@ -7,15 +7,17 @@ NUMBER_OF_PROCESSORS := $(shell nproc)
 ARCH := $(shell uname -m)
 
 # CMake URL
-CMAKE_VERSION := 3.27.7
+CMAKE_VERSION := 3.28.1
 CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/cmake-$(CMAKE_VERSION)-linux-$(shell uname -m).sh
+
+# LOVE Repository URL
+LOVE_REPOSITORY := https://github.com/love2d/love
 
 # Project branches (for git-based projects)
 LOVE_BRANCH := 12.0-development
 SDL2_BRANCH := release-2.28.5
 LUAJIT_BRANCH := v2.1
 OPENAL_BRANCH := 1.23.1
-BROTLI_BRANCH := v1.0.9
 ZLIB_BRANCH := v1.3
 HARFBUZZ_BRANCH := 6.0.0
 
@@ -160,18 +162,6 @@ $(ZLIB_PATH)/build/Makefile: $(ZLIB_PATH)/configure
 installdir/lib/libz.so: $(ZLIB_PATH)/build/Makefile
 	cd $(ZLIB_PATH)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
 
-# Brotli
-override BROTLI_PATH := brotli-$(BROTLI_BRANCH)
-
-$(BROTLI_PATH)/CMakeLists.txt:
-	git clone --depth 1 -b $(BROTLI_BRANCH) https://github.com/google/brotli $(BROTLI_PATH)
-
-$(BROTLI_PATH)/build/CMakeCache.txt: $(CMAKE) $(BROTLI_PATH)/CMakeLists.txt
-	$(CMAKE) -B$(BROTLI_PATH)/build -S$(BROTLI_PATH) $(CMAKE_OPTS)
-
-installdir/lib/libbrotlidec.so: $(BROTLI_PATH)/build/CMakeCache.txt
-	$(CMAKE) --build $(BROTLI_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
-
 # OpenAL-soft
 override OPENAL_PATH := openal-soft-$(OPENAL_BRANCH)
 
@@ -208,9 +198,9 @@ $(FT_FILE)/configure: $(FT_FILE).tar.gz
 	tar xzf $(FT_FILE).tar.gz
 	touch $(FT_FILE)/configure
 
-$(FT_FILE)/build/Makefile: $(FT_FILE)/configure installdir/bzip2installed.txt installdir/lib/libz.so installdir/lib/libbrotlidec.so
+$(FT_FILE)/build/Makefile: $(FT_FILE)/configure installdir/bzip2installed.txt installdir/lib/libz.so
 	mkdir -p $(FT_FILE)/build
-	cd $(FT_FILE)/build && CFLAGS="-I$(INSTALLPREFIX)/include" LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib -Wl,--no-undefined" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig ../configure --prefix=$(INSTALLPREFIX)
+	cd $(FT_FILE)/build && CFLAGS="-I$(INSTALLPREFIX)/include" LDFLAGS="-Wl,-rpath,'\$$\$$ORIGIN/../lib' -L$(INSTALLPREFIX)/lib -Wl,--no-undefined" PKG_CONFIG_PATH=$(INSTALLPREFIX)/lib/pkgconfig ../configure --prefix=$(INSTALLPREFIX) --without-png --with-bzip2 --without-harfbuzz  --without-brotli
 
 installdir/lib/libfreetype.so: $(FT_FILE)/build/Makefile
 	cd $(FT_FILE)/build && $(MAKE) install -j$(NUMBER_OF_PROCESSORS)
@@ -221,10 +211,10 @@ override HB_PATH := harfbuzz-$(HARFBUZZ_BRANCH)
 $(HB_PATH)/CMakeLists.txt:
 	git clone --depth 1 -b $(HARFBUZZ_BRANCH) https://github.com/harfbuzz/harfbuzz $(HB_PATH)
 
-$(HB_PATH)/build/CMakeCache.txt: $(HB_PATH)/CMakeLists.txt installdir/lib/libfreetype.so
-	$(CMAKE) -B$(HB_PATH)/build -S$(HB_PATH) $(CMAKE_OPTS) -DHB_HAVE_FREETYPE=1 -DHB_BUILD_SUBSET=0 -DBUILD_SHARED_LIBS=0 -DCMAKE_POSITION_INDEPENDENT_CODE=1
+$(HB_PATH)/build/CMakeCache.txt: $(CMAKE) $(HB_PATH)/CMakeLists.txt installdir/lib/libfreetype.so
+	$(CMAKE) -B$(HB_PATH)/build -S$(HB_PATH) $(CMAKE_OPTS) -DHB_HAVE_FREETYPE=1 -DHB_BUILD_SUBSET=0 -DBUILD_SHARED_LIBS=1 -DCMAKE_POSITION_INDEPENDENT_CODE=1
 
-installdir/lib/libharfbuzz.a: $(HB_PATH)/build/CMakeCache.txt
+installdir/lib/libharfbuzz.so: $(HB_PATH)/build/CMakeCache.txt
 	$(CMAKE) --build $(HB_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
 
 # libmodplug
@@ -259,14 +249,13 @@ installdir/lib/libluajit-5.1.so: $(LUAJIT_PATH)/Makefile
 override LOVE_PATH := love2d-$(LOVE_BRANCH)
 
 $(LOVE_PATH)/CMakeLists.txt:
-	git clone --depth 1 -b $(LOVE_BRANCH) https://github.com/love2d/love $(LOVE_PATH)
+	git clone --depth 1 -b $(LOVE_BRANCH) $(LOVE_REPOSITORY) $(LOVE_PATH)
 
-$(LOVE_PATH)/build/Makefile $(LOVE_PATH)/build/love.desktop: $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so installdir/lib/libharfbuzz.a
-	mkdir -p $(LOVE_PATH)/build
-	cd $(LOVE_PATH)/build && CFLAGS="-I$(INSTALLPREFIX)/include" CXXFLAGS="-I$(INSTALLPREFIX)/include" LDFLAGS="-L$(INSTALLPREFIX)/lib" cmake -S .. -B . -DCMAKE_INSTALL_PREFIX=./ -DCMAKE_PREFIX_PATH=$(INSTALLPREFIX)
+$(LOVE_PATH)/build/CMakeCache.txt $(LOVE_PATH)/build/love.desktop: $(CMAKE) $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL2.so installdir/lib/libharfbuzz.so
+	OPENALDIR=$$PWD/installdir FREETYPE_DIR=$$PWD/installdir $(CMAKE) -B$(LOVE_PATH)/build -S$(LOVE_PATH) $(CMAKE_OPTS) -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DHarfbuzz_ROOT=installdir -DModPlug_ROOT=installdir -DSDL2_ROOT=installdir -DTheora_ROOT=installdir -DVorbis_ROOT=installdir -DZLIB_ROOT=installdir -DOgg_ROOT=installdir -DLuaJIT_ROOT=installdir
 
-installdir/bin/love: $(LOVE_PATH)/build/Makefile
-	cd $(LOVE_PATH)/build && $(MAKE) DESTDIR=$(INSTALLPREFIX) install -j$(NUMBER_OF_PROCESSORS)
+installdir/bin/love: $(LOVE_PATH)/build/CMakeCache.txt
+	$(CMAKE) --build $(LOVE_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
 
 installdir/love.sh: love.sh
 	mkdir -p installdir
@@ -323,7 +312,7 @@ else
 	cd squashfs-root/usr/lib && ../../AppRun ../../../installdir2 ../../../$(APPIMAGE_OUTPUT)
 endif
 
-getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(BROTLI_PATH)/CMakeLists.txt $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt $(HB_PATH)/CMakeLists.txt
+getdeps: $(CMAKE) appimagetool $(SDL2_PATH)/configure $(LIBOGG_FILE).tar.gz $(LIBVORBIS_FILE).tar.gz $(LIBTHEORA_FILE).tar.gz $(ZLIB_PATH)/configure $(BZIP2_FILE).tar.gz $(FT_FILE).tar.gz $(LIBMODPLUG_FILE).tar.gz $(LUAJIT_PATH)/Makefile $(LOVE_PATH)/CMakeLists.txt $(HB_PATH)/CMakeLists.txt
 
 AppImage: $(APPIMAGE_OUTPUT)
 
