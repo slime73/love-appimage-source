@@ -7,15 +7,15 @@ NUMBER_OF_PROCESSORS := $(shell nproc)
 ARCH := $(shell uname -m)
 
 # CMake URL
-CMAKE_VERSION := 3.28.1
+CMAKE_VERSION := 3.30.4
 CMAKE_URL := https://github.com/Kitware/CMake/releases/download/v$(CMAKE_VERSION)/cmake-$(CMAKE_VERSION)-linux-$(shell uname -m).sh
 
 # LOVE Repository URL
 LOVE_REPOSITORY := https://github.com/love2d/love
 
 # Project branches (for git-based projects)
-LOVE_BRANCH := 12.0-development
-SDL2_BRANCH := release-2.28.5
+LOVE_BRANCH := main
+SDL2_BRANCH := release-2.30.8
 LUAJIT_BRANCH := v2.1
 OPENAL_BRANCH := 1.23.1
 ZLIB_BRANCH := v1.3
@@ -25,7 +25,7 @@ HARFBUZZ_BRANCH := 6.0.0
 LIBOGG_VERSION := 1.3.5
 LIBVORBIS_VERSION := 1.3.7
 LIBTHEORA_VERSION := 1.2.0alpha1
-FT_VERSION := 2.13.2
+FT_VERSION := 2.13.3
 BZIP2_VERSION := 1.0.8
 LIBMODPLUG_VERSION := 0.8.8.5
 
