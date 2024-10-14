@@ -251,7 +251,7 @@ $(LOVE_PATH)/CMakeLists.txt:
 	git clone --depth 1 -b $(LOVE_BRANCH) $(LOVE_REPOSITORY) $(LOVE_PATH)
 
 $(LOVE_PATH)/build/CMakeCache.txt $(LOVE_PATH)/build/love.desktop: $(CMAKE) $(LOVE_PATH)/CMakeLists.txt installdir/lib/libluajit-5.1.so installdir/lib/libmodplug.so installdir/lib/libfreetype.so installdir/lib/libopenal.so installdir/lib/libz.so installdir/lib/libtheora.so installdir/lib/libvorbis.so installdir/lib/libogg.so installdir/lib/libSDL3.so installdir/lib/libharfbuzz.so
-	OPENALDIR=$$PWD/installdir FREETYPE_DIR=$$PWD/installdir $(CMAKE) -B$(LOVE_PATH)/build -S$(LOVE_PATH) $(CMAKE_OPTS) -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DHarfbuzz_ROOT=installdir -DModPlug_ROOT=installdir -DSDL3_ROOT=installdir -DTheora_ROOT=installdir -DVorbis_ROOT=installdir -DZLIB_ROOT=installdir -DOgg_ROOT=installdir -DLuaJIT_ROOT=installdir
+	OPENALDIR=$$PWD/installdir FREETYPE_DIR=$$PWD/installdir $(CMAKE) -B$(LOVE_PATH)/build -S$(LOVE_PATH) $(CMAKE_OPTS) -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DLOVE_USE_SDL3=ON -DHarfbuzz_ROOT=installdir -DModPlug_ROOT=installdir -DSDL3_ROOT=installdir -DTheora_ROOT=installdir -DVorbis_ROOT=installdir -DZLIB_ROOT=installdir -DOgg_ROOT=installdir -DLuaJIT_ROOT=installdir
 
 installdir/bin/love: $(LOVE_PATH)/build/CMakeCache.txt
 	$(CMAKE) --build $(LOVE_PATH)/build --target install -j $(NUMBER_OF_PROCESSORS)
