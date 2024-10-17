@@ -15,7 +15,8 @@ LOVE_REPOSITORY := https://github.com/love2d/love
 
 # Project branches (for git-based projects)
 LOVE_BRANCH := main
-SDL3_BRANCH := X11_timeout
+SDL3_BRANCH := main
+SDL3_REV := 03b259893a8a8df80d0b1a35e619d708bef45380
 LUAJIT_BRANCH := v2.1
 OPENAL_BRANCH := 1.23.1
 ZLIB_BRANCH := v1.3
@@ -82,7 +83,8 @@ endif
 override SDL3_PATH := SDL3-$(SDL3_BRANCH)
 
 $(SDL3_PATH)/CMakeLists.txt:
-	git clone --depth 1 -b $(SDL3_BRANCH) https://github.com/slime73/SDL $(SDL3_PATH)
+	git clone --depth 4000 -b $(SDL3_BRANCH) https://github.com/libsdl-org/SDL $(SDL3_PATH)
+	cd $(SDL3_PATH) && git checkout $(SDL3_REV)
 
 $(SDL3_PATH)/build/CMakeCache.txt: $(CMAKE) $(SDL3_PATH)/CMakeLists.txt
 	$(CMAKE) -B$(SDL3_PATH)/build -S$(SDL3_PATH) $(CMAKE_OPTS)
