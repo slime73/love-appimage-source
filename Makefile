@@ -16,7 +16,7 @@ LOVE_REPOSITORY := https://github.com/love2d/love
 # Project branches (for git-based projects)
 LOVE_BRANCH := main
 SDL3_BRANCH := main
-SDL3_REV := eda0261c4e2fc845fadff397da1b04a2c5d2cd7f
+SDL3_REV := 6fa6297441e387abdc565daa44a04e07acd55624
 LUAJIT_BRANCH := v2.1
 OPENAL_BRANCH := 1.23.1
 ZLIB_BRANCH := v1.3
